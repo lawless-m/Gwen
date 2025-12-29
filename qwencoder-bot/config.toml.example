@@ -1,0 +1,204 @@
+# ============================================================================
+# QwenCoder Bot Configuration Example
+# ============================================================================
+# Copy this file to ~/.config/qwencoder-bot/config.toml and customize
+
+# ----------------------------------------------------------------------------
+# Server Endpoints
+# ----------------------------------------------------------------------------
+[server]
+# Gogs server URL (no trailing slash)
+gogs_url = "https://gogs.example.com"
+
+# Ollama API endpoint
+ollama_endpoint = "http://localhost:11434"
+
+# Ollama request timeout (seconds)
+ollama_timeout = 300
+
+# ----------------------------------------------------------------------------
+# Model Configuration
+# ----------------------------------------------------------------------------
+[models]
+# Assessment model (7B - fast, lightweight)
+assessor = "qwen2.5-coder:7b"
+
+# Implementation model (14B - better quality)
+coder = "qwen2.5-coder:14b"
+
+# Generation timeout (seconds)
+timeout_secs = 300
+
+[models.parameters]
+# Temperature (0.0 = deterministic, 1.0 = creative)
+temperature = 0.3
+
+# Top-p sampling (nucleus sampling)
+top_p = 0.9
+
+# ----------------------------------------------------------------------------
+# Polling Configuration
+# ----------------------------------------------------------------------------
+[polling]
+# How often to check for new issues (seconds)
+interval_secs = 60
+
+# Label that triggers bot processing
+trigger_label = "qwen-candidate"
+
+# Optional: Don't process issues with these labels
+# stop_labels = ["wip", "blocked"]
+
+# ----------------------------------------------------------------------------
+# VM Configuration
+# ----------------------------------------------------------------------------
+[vm]
+# Path to base VM snapshot (qcow2 format)
+base_snapshot = "/var/lib/qwencoder-bot/qwencoder-base.qcow2"
+
+# VM RAM allocation (MB)
+ram_mb = 4096
+
+# Maximum time for VM job (seconds)
+timeout_secs = 600
+
+# SSH connection details
+ssh_user = "qwencoder"
+ssh_port_base = 2222
+# ssh_key = "/home/user/.ssh/qwencoder_vm"
+
+[vm.qemu]
+enable_kvm = true
+cpu_cores = 2
+
+[vm.limits]
+max_concurrent_vms = 3
+max_disk_size_mb = 10240
+
+# ----------------------------------------------------------------------------
+# Gog CLI Integration
+# ----------------------------------------------------------------------------
+[gog_profiles]
+# Profile name for assessment phase
+assessor = "qwen-assessor"
+
+# Profile name for implementation phase
+coder = "qwen-coder"
+
+# Optional: Path to gog binary
+# gog_binary = "/usr/local/bin/gog"
+
+# ----------------------------------------------------------------------------
+# Repository Configuration
+# ----------------------------------------------------------------------------
+[repositories]
+# Optional: Limit to specific repositories
+# repos = ["owner/repo1", "owner/repo2"]
+
+# Optional: Exclude specific repositories
+# exclude_repos = ["owner/experimental"]
+
+# Cache directory for cloned repos
+cache_dir = "/var/cache/qwencoder-bot/repos"
+
+# ----------------------------------------------------------------------------
+# Assessment Configuration
+# ----------------------------------------------------------------------------
+[assessment]
+# Minimum confidence threshold (0-100)
+min_confidence = 60
+
+# Track assessment outcomes for analysis
+track_outcomes = true
+
+# Retry failed assessments
+retry_on_failure = true
+max_retries = 2
+
+# ----------------------------------------------------------------------------
+# Implementation Configuration
+# ----------------------------------------------------------------------------
+[implementation]
+# Branch naming pattern
+branch_prefix = "qwen-fix-"
+
+# Auto-push branches after successful tests
+auto_push = true
+
+# Create PRs automatically (if Gogs API supports)
+create_pr = false
+
+# ----------------------------------------------------------------------------
+# Testing Configuration
+# ----------------------------------------------------------------------------
+[testing.rust]
+commands = [
+    "cargo test --all",
+    "cargo clippy -- -D warnings",
+    "cargo fmt -- --check"
+]
+timeout_secs = 300
+
+[testing.python]
+commands = [
+    "pytest",
+    "mypy .",
+    "black --check ."
+]
+timeout_secs = 120
+
+[testing.csharp]
+commands = [
+    "dotnet test",
+    "dotnet format --verify-no-changes"
+]
+timeout_secs = 180
+
+# ----------------------------------------------------------------------------
+# Logging Configuration
+# ----------------------------------------------------------------------------
+[logging]
+# Log level: "error", "warn", "info", "debug", "trace"
+level = "info"
+
+# Main log file
+file = "/var/log/qwencoder-bot/bot.log"
+
+# Log rotation
+max_size_mb = 100
+max_age_days = 30
+
+# Also log to stdout
+log_to_stdout = false
+
+# ----------------------------------------------------------------------------
+# Error Handling
+# ----------------------------------------------------------------------------
+[error_handling]
+# What to do on failures
+on_assessment_failure = "retry"
+on_implementation_failure = "escalate"
+on_vm_failure = "skip"
+
+max_retries = 3
+retry_backoff = "exponential"
+retry_delay_secs = 10
+
+# ----------------------------------------------------------------------------
+# Security Settings
+# ----------------------------------------------------------------------------
+[security]
+verify_ssl = true
+
+# Restrict file operations
+restrict_file_ops = true
+max_files_per_issue = 10
+
+# Disallow certain file patterns
+forbidden_patterns = [
+    ".git/*",
+    ".env",
+    "secrets.toml",
+    "*.key",
+    "*.pem"
+]
